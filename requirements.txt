@@ -1,0 +1,6 @@
+# Required Python packages for QuickBooks Export Scripts
+pywin32>=300; sys_platform == 'win32'
+pythoncom>=1.0.0; sys_platform == 'win32'
+
+# Note: The scripts are designed to run on Windows with QuickBooks Desktop installed.
+# The pywin32 and pythoncom packages are only available on Windows.
