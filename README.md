@@ -20,19 +20,29 @@ This repository contains Python scripts to export various types of data from Qui
 
 ## Available Scripts
 
-### 1. qb_inv.py - Export Customer and Ship-To Addresses
+### 1. qb_inv.py - Export Invoice Data
 
-**Purpose**: Exports all customer information along with their ship-to addresses to a CSV file.
+**Purpose**: Exports invoice data from QuickBooks to CSV format. You can export by specific invoice numbers or for an entire year.
 
 **Usage**:
 ```
 python qb_inv.py
 ```
 
+**Options**:
+- When prompted, choose to:
+  - (n) Fetch by specific invoice numbers (comma-separated)
+  - (y) Fetch all invoices for a specific year
+
 **Output**:
-- Creates a file named `shipto_addresses.csv` with the following columns:
-  - Customer: Customer name
-  - ShipToAddress: Formatted ship-to address
+- Creates a CSV file with the following columns:
+  - Invoice Number, Customer Name, Invoice Date, PO Number
+  - Ship To: Formatted shipping address
+  - Line Description, Quantity, Rate, Amount
+  - Item Reference Full Name
+- File naming:
+  - For single invoice: `invoice_[NUMBER].csv`
+  - For yearly export: `invoices_from_[YEAR].csv`
 
 ### 2. qb_so.py - Export Sales Orders
 
