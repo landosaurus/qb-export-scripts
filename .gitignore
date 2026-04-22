@@ -1,11 +1,42 @@
-*.csv
-*.xlsx
-*.json
-.venv/*
-__pycache__
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
+.venv/
+venv/
 dist/
 build/
 *.egg-info/
 .coverage
+.mypy_cache/
+.ruff_cache/
+
+# Claude Code local config and session state
+.claude/
+.remember/
+
+# Secrets / credentials (defensive — these should never be in a public repo)
+.env
+.env.*
+*.env
+secrets.json
+credentials.json
+*.key
+*.pem
+*.pfx
+
+# Output artifacts from the old export scripts (root-level only so
+# test fixtures under tests/fixtures/ are NOT ignored)
+/*.csv
+/*.xlsx
