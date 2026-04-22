@@ -650,13 +650,13 @@ git commit -m "transport: add response status extraction"
 ```python
 # tests/unit/models/test_base.py
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from qb_cli.models.base import BaseEntity
 
 
 class Demo(BaseEntity):
-    ref_number: str | None = None
-    memo: str | None = None
+    ref_number: str | None = Field(default=None, alias="RefNumber")
+    memo: str | None = Field(default=None, alias="Memo")
 
 
 def test_populate_by_name_and_alias():
