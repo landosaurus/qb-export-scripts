@@ -1003,7 +1003,7 @@ def test_populates_line_items_from_qb_xml_casing():
 - **6.10 deposit** — `deposit_to_account_ref`, `cash_back_info`, `deposit_lines: list[DepositLine]` with `payment_txn_id` or `(entity_ref, account_ref, amount)`.
 - **6.11 customer** — `name`, `company_name`, `first_name`, `middle_name`, `last_name`, `salutation`, `job_title`, `phone`, `alt_phone`, `fax`, `email`, `cc_email`, `contact`, `alt_contact`, `bill_address`, `ship_addresses: list[ShipAddress]` (note: list), `terms_ref`, `sales_rep_ref`, `tax_code_ref`, `price_level_ref`, `notes`, `credit_limit`, `balance` (read-only).
 - **6.12 vendor** — `name`, `company_name`, `tax_id`, `is_vendor_eligible_for_1099`, `credit_limit`, `vendor_type_ref`, `terms_ref`, `bill_address`, `ship_address`, `contact_info` fields like customer.
-- **6.13 item** — polymorphic. Define `ItemBase(BaseEntity)` with common fields (`list_id`, `name`, `full_name`, `is_active`, `parent_ref`, `sublevel`), then subclasses: `InventoryItem`, `ServiceItem`, `NonInventoryItem`, `OtherChargeItem`. Use `item_type` as a discriminator when parsing from a generic ItemQuery response. Provide a `parse_item(elem)` helper in the qbxml layer that dispatches on the element name.
+- **6.13 item** — polymorphic. Define `ItemBase(BaseEntity)` with common fields (`list_id`, `name`, `full_name`, `is_active`, `parent_ref`, `sublevel`), then subclasses: `InventoryItem`, `ServiceItem`, `NonInventoryItem`, `OtherChargeItem`. In this task (6.13) only define the class hierarchy and (optionally) a `typing.Annotated` discriminated-union type `AnyItem = Annotated[Union[InventoryItem, ServiceItem, ...], Field(discriminator="item_type")]`. **The `parse_item(elem)` dispatcher lives in Task 7.13, not here** — do not block on it.
 - **6.14 price_level** — `name`, `is_active`, `price_level_fixed_percentage` XOR `price_level_per_item: list[PriceLevelPerItem]` (with `item_ref`, `custom_price`).
 - **6.15 ship_to** — `ship_to_address_block` fields (`name`, `addr1`..`addr5`, `city`, `state`, `postal_code`, `country`, `note`, `default_ship_to`). The `ship_to` entity is a sub-entity of `customer`; the model mirrors QB's `ShipToAddress` element.
 
@@ -1290,11 +1290,13 @@ def test_flat_entity_no_line_rows(tmp_path: Path):
 - [ ] **Step 8.3.3: Implement**
 
 Implementation strategy:
-- `to_csv(entities, path)` — inspect the model class, derive header columns = `["row_type", "parent_ref"] + header_cols + line_cols`. For each entity, emit one header row; if the entity has a populated `line_items`/`expense_lines`/`item_lines`, emit one line row per item with `parent_ref` set to the entity's `ref_number` (or `name` for list entities — but list entities have no line items so this is moot).
-- `from_csv(model, path)` — read all rows; group consecutive rows by `parent_ref` (None/empty on header rows); reconstruct entities by combining the header row with its following line rows.
+- `to_csv(entities, path)` — inspect the model class, derive header columns = `["row_type", "parent_ref"] + header_cols + line_cols_union`. For each entity, emit one header row; then for each list-typed field on the model (there may be more than one — e.g. `Bill` has both `expense_lines` and `item_lines`), emit one line row per item with `parent_ref` set to the entity's `ref_number`.
+- `row_type` values: `header`, plus one value per list field (e.g. `line` for invoices/SOs/POs/estimates/credit_memos/sales_receipts, `expense_line` and `item_line` for bills, `deposit_line` for deposits, `applied_to` for receive_payments). The serializer derives these from the list field name (e.g. field `expense_lines` → row_type `expense_line`). Round-trip asserts must round through this.
+- `from_csv(model, path)` — read all rows; group by `parent_ref`; bucket line rows by their `row_type` into the appropriate list field on the parent.
 - Use Python's stdlib `csv` module. Preserve Decimal precision by emitting strings, not floats.
+- Column discovery: `<Entity>.model_fields` gives header fields; filter list-typed fields whose element type is a `BaseEntity` subclass to discover line-item sub-field sets. The union of all such sub-fields' columns forms the line column block.
 
-Full implementation lives in `src/qb_cli/io/csv_serializer.py`. Keep the column discovery generic: `<Entity>.model_fields` gives header fields; look for a list-typed field on the model (by type inspection) to discover line-item sub-fields.
+Full implementation lives in `src/qb_cli/io/csv_serializer.py`. Test `test_bill_round_trip_with_both_line_types` MUST be included — create a Bill with at least one expense line and one item line, serialize, reload, confirm both lists survive.
 
 - [ ] **Step 8.3.4: Run — expect pass. Commit.**
 
@@ -1425,28 +1427,46 @@ Thin wrapper: given `entity_key` and refs/filters, return list of model instance
 
 - [ ] Steps: test → fail → impl → pass → commit.
 
-### Task 9.7: Context object
+### Task 9.7: Context object + utils
 
 **Files:**
 - Create: `src/qb_cli/context.py`
 - Create: `src/qb_cli/config.py`
+- Create: `src/qb_cli/utils/__init__.py`
+- Create: `src/qb_cli/utils/logging.py`
+- Create: `src/qb_cli/utils/date_parse.py`
 - Test: `tests/unit/test_context.py`
+- Test: `tests/unit/utils/test_logging.py`
+- Test: `tests/unit/utils/test_date_parse.py`
 
 ```python
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Callable, ContextManager
+
+ConnectionFactory = Callable[[], ContextManager["QBConnection"]]
+
+
 @dataclass
 class Context:
-    connection: QBConnection | None
+    connection_factory: ConnectionFactory
     config: Config
     logger: logging.Logger
     output_dir: Path
     default_format: Format
     json_output: bool
-    dry_run: bool   # only the default; op-specific dry_run overrides this
+    dry_run: bool
 ```
 
-`Config` loaded from `~/.config/qb_cli/config.toml` with env-var overrides. `Context.from_env(**cli_overrides)` assembles the object.
+`Context` holds a **connection factory**, not a live connection, because the REPL stays open across many commands and a single QB session per-op is safer (§5.7 of the spec). Ops call `with ctx.connection_factory() as conn: ...`. The factory is built from config + CLI overrides.
 
-- [ ] Steps: test → fail → impl → pass → commit.
+`utils/logging.py` — `setup_logging(level: str, json: bool) -> logging.Logger` returning a configured root logger. JSON mode emits one-line JSON records; text mode emits a short human-readable format.
+
+`utils/date_parse.py` — `parse_date(s: str) -> date` accepts `YYYY-MM-DD`, `MM/DD/YYYY`, and `today`/`yesterday` shortcuts; raises `ValueError` otherwise. `year_range(year: int) -> tuple[date, date]` returns `(YYYY-01-01, today if year==current_year else YYYY-12-31)`.
+
+`Config` loaded from `~/.config/qb_cli/config.toml` (or `%APPDATA%\qb_cli\config.toml` on Windows) with env-var overrides. `Context.from_env(**cli_overrides)` assembles the object.
+
+- [ ] Steps for each file: test → fail → impl → pass → commit (4 commits total: logging, date_parse, config, context).
 
 ---
 
