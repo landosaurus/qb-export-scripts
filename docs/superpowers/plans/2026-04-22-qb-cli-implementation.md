@@ -10,7 +10,7 @@
 
 **Spec reference:** `docs/superpowers/specs/2026-04-22-qb-cli-repl-design.md`
 
-**qb-mcp reference root:** `/Users/lang/Documents/coding_temp/qb-mcp/src/qb_mcp/` — used for **reading only**. Do not import, vendor, or copy code from qb-mcp. Reference it when you need to remember the exact shape of a QBXML request for a given entity. The file `qb-mcp/src/qb_mcp/tools/<entity>s/<entity>_query.py` shows how qb-mcp builds queries; `_add.py` and `_mod.py` show the mutation shapes.
+**qb-mcp reference root:** `<qb-mcp>/src/qb_mcp/` — used for **reading only**. (`<qb-mcp>` refers to the user's local checkout of the qb-mcp MCP server project, a sibling repo on the developer's machine.) Do not import, vendor, or copy code from qb-mcp. Reference it when you need to remember the exact shape of a QBXML request for a given entity. The file `qb-mcp/src/qb_mcp/tools/<entity>s/<entity>_query.py` shows how qb-mcp builds queries; `_add.py` and `_mod.py` show the mutation shapes.
 
 ---
 
@@ -933,7 +933,7 @@ Each subtask follows the same template. **An agent picks one entity, completes t
 - Test: `tests/unit/models/test_<entity>.py`
 
 **Reference while coding:**
-- QB field shapes: `/Users/lang/Documents/coding_temp/qb-mcp/src/qb_mcp/tools/<entity plural>/<entity>_add.py` (look at the XML fields assembled — those are the real field names).
+- QB field shapes: `<qb-mcp>/src/qb_mcp/tools/<entity plural>/<entity>_add.py` (look at the XML fields assembled — those are the real field names).
 - Do not copy code. Reference only.
 
 **For each entity, the file contains:**

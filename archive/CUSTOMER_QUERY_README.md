@@ -3,7 +3,7 @@
 Complete implementation of QuickBooks Desktop customer querying via QBXML.
 
 ## Location
-`/Users/lang/Documents/coding_temp/qb-export-scripts/qb_mcp_tools/tools/customer_query.py`
+`<repo-root>/qb_mcp_tools/tools/customer_query.py`
 
 ## Features
 

@@ -1,7 +1,7 @@
 # Estimate Query Tool Reference
 
 ## Location
-`/Users/lang/Documents/coding_temp/qb-export-scripts/qb_mcp_tools/tools/estimate_query.py`
+`<repo-root>/qb_mcp_tools/tools/estimate_query.py`
 
 ## Function Signature
 
