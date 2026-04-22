@@ -1,5 +1,7 @@
 def main() -> None:
-    raise SystemExit("qb_cli entry point not yet wired — see cli/root.py (task 8)")
+    from qb_cli.cli.root import qb
+
+    qb()
 
 
 if __name__ == "__main__":
