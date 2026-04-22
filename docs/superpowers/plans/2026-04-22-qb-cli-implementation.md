@@ -185,7 +185,7 @@ git commit -m "scaffold: add qb_cli package skeleton and pyproject"
 **Files:**
 - Create: `archive/README-archived.md`
 - Move: `qb_inv.py`, `qb_so.py`, `qb_po.py`, `qb_bills.py`, `qb_price_level.py`, `qb_shipto.py`, `example_customer_query.py`, `example_purchase_order_add.py`, `test_ship_to_query.py`, `CUSTOMER_QUERY_README.md`, `ESTIMATE_QUERY_REFERENCE.md` → `archive/`
-- Modify: root `README.md` (stub for now; full rewrite in task 10)
+- Modify: root `README.md` (stub for now; full rewrite in task 13)
 
 - [ ] **Step 2.1: Create `archive/` and move scripts with `git mv`**
 
