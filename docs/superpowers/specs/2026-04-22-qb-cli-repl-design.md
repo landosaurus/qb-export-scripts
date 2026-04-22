@@ -336,12 +336,24 @@ Straight Pydantic `model_dump_json`. Round-trip invariant is trivial.
 
 #### CSV
 
-A header row plus either:
-- One row per entity for flat records (customers, vendors, simple items); or
-- One "parent" row per entity followed by N "line" rows for records with line
-  items (invoices, SOs, POs, bills, estimates, sales receipts, credit memos,
-  deposits). Line rows share the parent `ref_number` in a dedicated
-  `parent_ref` column; their `row_type` column is `line` instead of `header`.
+A single header row that is the **union** of header-level and line-level
+columns. Every data row includes a `row_type` column (`header` or `line`) and a
+`parent_ref` column that pins line rows to their header row by `ref_number`.
+Columns that do not apply to a row type are left blank.
+
+Concrete example for `invoice` (abridged — real schema has more columns):
+
+```
+row_type,parent_ref,ref_number,customer,txn_date,po_number,line_item,quantity,rate,amount
+header,,14396,ACME Corp,2025-05-01,7740-SH,,,,
+line,14396,,,,,40-RAG12,10,25.00,250.00
+line,14396,,,,,Freight,1,35.00,35.00
+header,,14397,Other Co,2025-05-02,7741,,,,
+line,14397,,,,,24-CW412P,100,0.50,50.00
+```
+
+Flat entities (customers, vendors, simple items, price levels, ship-tos) write
+only `row_type=header` rows; `parent_ref` and the line columns stay empty.
 
 `from_csv` groups consecutive rows by `parent_ref` to reassemble line items.
 Round-trip: `from_csv(to_csv(xs)) == xs`, property-tested.
@@ -380,7 +392,8 @@ HANDLERS: dict[str, EntityHandler] = {
 
 - Built on **Click** (mature, composable, plays well with prompt_toolkit).
 - Root group `qb` carries global flags: `--company-file`, `--config`,
-  `--log-level`, `--dry-run`, `--json`.
+  `--log-level`, `--json`. `--dry-run` is a flag on `import`, `add`, and `mod`
+  subcommands only (it has no meaning on read operations).
 - Subcommand shape: `qb <verb> <noun> [options]`.
 - `--help` pages auto-generated. A `--help-entities` root flag lists all
   supported entity types.
@@ -483,9 +496,10 @@ qb mod invoice --ref 14396 --po-number 7740-SH
 | `pywin32` | QB COM | Windows-only runtime dep |
 | `pytest` | Tests | dev |
 | `hypothesis` | Property tests | dev |
-| `tomli` | TOML config (<py3.11 fallback) | stdlib `tomllib` when ≥ 3.11 |
+| `tomli` | TOML config parse on py3.10 | hard dep at floor; code uses `tomllib` via `try/except ImportError` shim |
 
-Python `>=3.10` to match `qb-mcp`.
+Python `>=3.10` to match `qb-mcp`. On 3.10, `tomli` provides `tomllib` semantics;
+on 3.11+ the stdlib `tomllib` is used.
 
 ## 6. Build Sequence (handoff to writing-plans)
 
@@ -507,14 +521,22 @@ Ordered; items within a step marked `‖` can run as parallel agent tasks.
 11. **Smoke suite** — one integration test per entity against a live QB
     (deferred to user; agents produce the scaffolding).
 
-## 7. Open Questions
+## 7. Resolved decisions and open questions
 
-None blocking design. Open items to confirm before or during implementation:
+### Resolved in this spec
 
-- Exact default location of company file on the Windows host — config-only for
-  now; defaults fine.
-- Whether `--on-duplicate update` should be in v1 or deferred; proposed to
-  include because it's a small extension of `mod` already implemented.
-- Whether `item` import should support creating items across subtypes in a
-  single CSV or require a file per subtype. Proposal: single CSV with an
-  `item_type` column that the ops layer dispatches on.
+- **`--on-duplicate update` is in v1.** It reuses the `mod` path (fetches
+  `EditSequence` via a query, then issues a `Mod` request). Deferring it would
+  buy very little since the machinery already exists for `mod`.
+- **Item import uses a single CSV with an `item_type` column** (values:
+  `inventory`, `service`, `non_inventory`, `other_charge`). The ops layer
+  dispatches to the correct `Item*AddRq` based on this column. The CLI flag for
+  a single-record add is `--item-type` (kebab-case per Click convention); the
+  CSV column is `item_type` (snake-case per data convention). This mapping is
+  the standard translation and needs no special code.
+
+### Still open, non-blocking
+
+- Exact default location of the company file on the Windows host — the config
+  reads from `config.toml` with no hard-coded default. Defaults are fine as-is
+  for planning.
