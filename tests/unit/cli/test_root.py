@@ -15,12 +15,10 @@ def test_qb_help_lists_subcommands() -> None:
     assert "repl" in result.output
 
 
-def test_qb_no_subcommand_invokes_repl_stub() -> None:
+def test_qb_no_subcommand_invokes_repl() -> None:
     from qb_cli.cli.root import qb
 
     runner = CliRunner()
-    result = runner.invoke(qb, [], obj=MagicMock())
-    # repl stub exits 1 with the "not yet implemented" message on stderr
-    assert result.exit_code == 1
-    combined = result.output + (result.stderr if result.stderr_bytes else "")
-    assert "REPL not yet implemented" in combined
+    # With no input piped, the REPL sees immediate EOF and exits cleanly.
+    result = runner.invoke(qb, [], obj=MagicMock(), input="")
+    assert result.exit_code == 0
