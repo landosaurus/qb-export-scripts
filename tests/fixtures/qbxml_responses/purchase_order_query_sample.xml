@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<QBXML>
+  <QBXMLMsgsRs>
+    <PurchaseOrderQueryRs requestID="1" statusCode="0" statusSeverity="Info" statusMessage="Status OK">
+      <PurchaseOrderRet>
+        <TxnID>PO-1</TxnID>
+        <TimeCreated>2025-05-01T10:00:00-07:00</TimeCreated>
+        <TimeModified>2025-05-01T10:00:00-07:00</TimeModified>
+        <EditSequence>1</EditSequence>
+        <TxnNumber>301</TxnNumber>
+        <VendorRef>
+          <ListID>80000002-5678</ListID>
+          <FullName>Widgets Inc.</FullName>
+        </VendorRef>
+        <TxnDate>2025-05-01</TxnDate>
+        <RefNumber>7740</RefNumber>
+        <VendorAddress>
+          <Addr1>1 Manufacturing Rd</Addr1>
+          <City>Portland</City>
+          <State>OR</State>
+          <PostalCode>97201</PostalCode>
+        </VendorAddress>
+        <ExpectedDate>2025-05-20</ExpectedDate>
+        <IsManuallyClosed>false</IsManuallyClosed>
+        <Subtotal>0.00</Subtotal>
+        <TotalAmount>0.00</TotalAmount>
+        <IsFullyReceived>false</IsFullyReceived>
+      </PurchaseOrderRet>
+      <PurchaseOrderRet>
+        <TxnID>PO-2</TxnID>
+        <TimeCreated>2025-05-02T11:00:00-07:00</TimeCreated>
+        <TimeModified>2025-05-02T11:00:00-07:00</TimeModified>
+        <EditSequence>3</EditSequence>
+        <TxnNumber>302</TxnNumber>
+        <VendorRef><FullName>Parts Co</FullName></VendorRef>
+        <TxnDate>2025-05-02</TxnDate>
+        <RefNumber>7741</RefNumber>
+        <PurchaseOrderLineRet>
+          <TxnLineID>PL-1</TxnLineID>
+          <ItemRef><FullName>40-RAG12</FullName></ItemRef>
+          <Desc>Reclaimed terry</Desc>
+          <Quantity>100</Quantity>
+          <Rate>5.00</Rate>
+          <Amount>500.00</Amount>
+          <ReceivedQuantity>0</ReceivedQuantity>
+        </PurchaseOrderLineRet>
+        <PurchaseOrderLineRet>
+          <TxnLineID>PL-2</TxnLineID>
+          <ItemRef><FullName>Freight</FullName></ItemRef>
+          <Quantity>1</Quantity>
+          <Rate>20.00</Rate>
+          <Amount>20.00</Amount>
+          <ReceivedQuantity>0</ReceivedQuantity>
+        </PurchaseOrderLineRet>
+        <Subtotal>520.00</Subtotal>
+        <TotalAmount>520.00</TotalAmount>
+        <IsFullyReceived>false</IsFullyReceived>
+      </PurchaseOrderRet>
+    </PurchaseOrderQueryRs>
+  </QBXMLMsgsRs>
+</QBXML>
