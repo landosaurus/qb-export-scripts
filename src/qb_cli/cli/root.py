@@ -54,8 +54,10 @@ def qb(
 
 # Sub-commands registered below (imports kept at module scope-bottom to avoid cycles).
 from qb_cli.cli.export_cmd import export  # noqa: E402
+from qb_cli.cli.query_cmd import query  # noqa: E402
 from qb_cli.cli.repl_cmd import repl  # noqa: E402
 
 
 qb.add_command(export)
+qb.add_command(query)
 qb.add_command(repl)
