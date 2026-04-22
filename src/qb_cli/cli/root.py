@@ -57,9 +57,11 @@ from qb_cli.cli.export_cmd import export  # noqa: E402
 from qb_cli.cli.import_cmd import import_cmd  # noqa: E402
 from qb_cli.cli.query_cmd import query  # noqa: E402
 from qb_cli.cli.repl_cmd import repl  # noqa: E402
+from qb_cli.cli.verify_cmd import verify  # noqa: E402
 
 
 qb.add_command(export)
 qb.add_command(import_cmd)
 qb.add_command(query)
 qb.add_command(repl)
+qb.add_command(verify)
