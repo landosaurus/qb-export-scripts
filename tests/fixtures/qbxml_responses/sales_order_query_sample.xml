@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<QBXML>
+  <QBXMLMsgsRs>
+    <SalesOrderQueryRs requestID="1" statusCode="0" statusSeverity="Info" statusMessage="Status OK">
+      <SalesOrderRet>
+        <TxnID>SO-1</TxnID>
+        <TimeCreated>2025-05-01T10:00:00-07:00</TimeCreated>
+        <TimeModified>2025-05-01T10:00:00-07:00</TimeModified>
+        <EditSequence>1</EditSequence>
+        <TxnNumber>501</TxnNumber>
+        <CustomerRef>
+          <ListID>80000001-1234</ListID>
+          <FullName>ACME Corp</FullName>
+        </CustomerRef>
+        <TxnDate>2025-05-01</TxnDate>
+        <RefNumber>7740</RefNumber>
+        <ShipAddress>
+          <Addr1>100 Main St</Addr1>
+          <City>Seattle</City>
+          <State>WA</State>
+          <PostalCode>98101</PostalCode>
+        </ShipAddress>
+        <ShipDate>2025-05-15</ShipDate>
+        <IsManuallyClosed>false</IsManuallyClosed>
+        <Subtotal>0.00</Subtotal>
+        <TotalAmount>0.00</TotalAmount>
+        <IsFullyInvoiced>false</IsFullyInvoiced>
+      </SalesOrderRet>
+      <SalesOrderRet>
+        <TxnID>SO-2</TxnID>
+        <TimeCreated>2025-05-02T11:00:00-07:00</TimeCreated>
+        <TimeModified>2025-05-02T11:00:00-07:00</TimeModified>
+        <EditSequence>2</EditSequence>
+        <TxnNumber>502</TxnNumber>
+        <CustomerRef><FullName>Other Co</FullName></CustomerRef>
+        <TxnDate>2025-05-02</TxnDate>
+        <RefNumber>7741</RefNumber>
+        <SalesOrderLineRet>
+          <TxnLineID>SL-1</TxnLineID>
+          <ItemRef><FullName>40-RAG12</FullName></ItemRef>
+          <Desc>Reclaimed terry</Desc>
+          <Quantity>10</Quantity>
+          <Rate>25.00</Rate>
+          <Amount>250.00</Amount>
+        </SalesOrderLineRet>
+        <SalesOrderLineRet>
+          <TxnLineID>SL-2</TxnLineID>
+          <ItemRef><FullName>Freight</FullName></ItemRef>
+          <Quantity>1</Quantity>
+          <Rate>35.00</Rate>
+          <Amount>35.00</Amount>
+        </SalesOrderLineRet>
+        <Subtotal>285.00</Subtotal>
+        <TotalAmount>285.00</TotalAmount>
+        <IsFullyInvoiced>false</IsFullyInvoiced>
+      </SalesOrderRet>
+    </SalesOrderQueryRs>
+  </QBXMLMsgsRs>
+</QBXML>
