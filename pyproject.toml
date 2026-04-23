@@ -8,6 +8,7 @@ dependencies = [
     "prompt-toolkit>=3.0",
     "pydantic>=2.6",
     "lxml>=4.9",
+    "questionary>=2.0",
     "tomli>=2.0;python_version<'3.11'",
 ]
 
