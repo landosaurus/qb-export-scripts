@@ -108,6 +108,41 @@ def test_verify_empty_inputs_returns_empty_buckets():
     assert called["n"] == 0
 
 
+def test_emitted_qbxml_uses_fullname_for_every_bucket():
+    """Regression: TermsQueryRq previously used <Name>, which fails QB schema validation.
+    Also regression: IncludeRetElement on Customer/Vendor triggered parser errors on some
+    QB versions. Pin the emitted shape so neither comes back.
+    """
+    sent: list[str] = []
+
+    class FakeConn:
+        def __enter__(self_inner):
+            return self_inner
+
+        def __exit__(self_inner, *a):
+            return False
+
+        def send(self_inner, req):
+            sent.append(req)
+            return _CUSTOMER_RESPONSE_NONE  # 500 — treated as all-missing
+
+    ctx = SimpleNamespace(connection_factory=lambda: FakeConn())
+    verify_entities(
+        ctx,
+        customers=["C1"],
+        vendors=["V1"],
+        items=["I1"],
+        terms=["T1"],
+    )
+    assert len(sent) == 4
+    for req in sent:
+        assert "<FullName>" in req, f"missing <FullName> in: {req[:200]}"
+        assert "IncludeRetElement" not in req, "IncludeRetElement causes parser errors on some QB versions"
+    terms_req = next(r for r in sent if "TermsQueryRq" in r)
+    assert "<FullName>T1</FullName>" in terms_req
+    assert "<Name>T1</Name>" not in terms_req
+
+
 def test_verify_multiple_buckets_dispatches_correctly():
     vendor_response = """<?xml version="1.0" ?>
 <QBXML>

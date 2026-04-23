@@ -22,42 +22,28 @@ class VerifyResult:
         return all(len(v) == 0 for v in self.missing.values())
 
 
-def _build_customer_query(names: Sequence[str]) -> str:
-    parts: list[str] = ['    <CustomerQueryRq requestID="1">']
+def _build_list_query(rq_tag: str, names: Sequence[str]) -> str:
+    parts: list[str] = [f'    <{rq_tag} requestID="1">']
     for name in names:
         parts.append(f"      <FullName>{xml_escape(name)}</FullName>")
-    parts.append("      <IncludeRetElement>Name</IncludeRetElement>")
-    parts.append("      <IncludeRetElement>FullName</IncludeRetElement>")
-    parts.append("      <IncludeRetElement>ListID</IncludeRetElement>")
-    parts.append("    </CustomerQueryRq>")
+    parts.append(f"    </{rq_tag}>")
     return wrap_request("\n".join(parts))
+
+
+def _build_customer_query(names: Sequence[str]) -> str:
+    return _build_list_query("CustomerQueryRq", names)
 
 
 def _build_vendor_query(names: Sequence[str]) -> str:
-    parts: list[str] = ['    <VendorQueryRq requestID="1">']
-    for name in names:
-        parts.append(f"      <FullName>{xml_escape(name)}</FullName>")
-    parts.append("      <IncludeRetElement>Name</IncludeRetElement>")
-    parts.append("      <IncludeRetElement>FullName</IncludeRetElement>")
-    parts.append("      <IncludeRetElement>ListID</IncludeRetElement>")
-    parts.append("    </VendorQueryRq>")
-    return wrap_request("\n".join(parts))
+    return _build_list_query("VendorQueryRq", names)
 
 
 def _build_item_query(names: Sequence[str]) -> str:
-    parts: list[str] = ['    <ItemQueryRq requestID="1">']
-    for name in names:
-        parts.append(f"      <FullName>{xml_escape(name)}</FullName>")
-    parts.append("    </ItemQueryRq>")
-    return wrap_request("\n".join(parts))
+    return _build_list_query("ItemQueryRq", names)
 
 
 def _build_terms_query(names: Sequence[str]) -> str:
-    parts: list[str] = ['    <TermsQueryRq requestID="1">']
-    for name in names:
-        parts.append(f"      <Name>{xml_escape(name)}</Name>")
-    parts.append("    </TermsQueryRq>")
-    return wrap_request("\n".join(parts))
+    return _build_list_query("TermsQueryRq", names)
 
 
 def _collect_names_from_response(response_xml: str) -> set[str]:
