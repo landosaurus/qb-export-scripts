@@ -304,6 +304,125 @@ def test_verify_happy_path(mocker: MockerFixture) -> None:
     assert kwargs["terms"] == ()
 
 
+def test_export_back_goes_to_previous_prompt(mocker: MockerFixture) -> None:
+    """User picks export -> entity -> selects Back at the mode prompt -> returns to entity prompt.
+
+    Verified by asserting the second call to questionary.select targeted the entity list again.
+    """
+    select_mock = mocker.patch(
+        "qb_cli.repl.wizard.questionary.select",
+        side_effect=[
+            _canned("Export records"),  # main menu
+            _canned("invoice"),  # entity (first visit)
+            _canned("← Back"),  # mode -> Back
+            _canned("invoice"),  # entity (second visit, after Back)
+            _canned("Specific ref numbers (comma-separated)"),  # mode (second visit)
+            _canned("CSV"),  # format
+            _canned("Exit"),  # main menu exit
+        ],
+    )
+    mocker.patch(
+        "qb_cli.repl.wizard.questionary.text",
+        side_effect=[
+            _canned("14396"),  # refs
+            _canned("out.csv"),  # output path
+        ],
+    )
+    export_mock = mocker.patch(
+        "qb_cli.repl.wizard.export",
+        return_value=ExportResult(
+            entity="invoice",
+            count=1,
+            output_path=Path("out.csv"),
+            format=Format.CSV,
+        ),
+    )
+
+    rc = run_wizard(_fake_ctx())
+    assert rc == 0
+    assert export_mock.call_count == 1
+    # Collect the `choices` arg from every select call for inspection.
+    choices_per_call = [
+        call.kwargs.get("choices") or (call.args[1] if len(call.args) > 1 else None)
+        for call in select_mock.call_args_list
+    ]
+    # Calls: 0=main, 1=entity, 2=mode, 3=entity (after Back), 4=mode, 5=format, 6=main
+    assert choices_per_call[1] == choices_per_call[3]
+    # The entity call should include the 'invoice' choice.
+    assert "invoice" in choices_per_call[1]
+    # Back/Main labels should be present on the 'mode' call (sub-flow, not first step).
+    assert "← Back" in choices_per_call[2]
+    assert "← Main menu" in choices_per_call[2]
+    # First-step (entity) should only carry Main menu, no Back.
+    assert "← Back" not in choices_per_call[1]
+    assert "← Main menu" in choices_per_call[1]
+
+
+def test_text_sentinel_back(mocker: MockerFixture) -> None:
+    """At the Ref numbers text prompt, typing 'back' returns to the mode prompt."""
+    select_mock = mocker.patch(
+        "qb_cli.repl.wizard.questionary.select",
+        side_effect=[
+            _canned("Export records"),  # main
+            _canned("invoice"),  # entity
+            _canned("Specific ref numbers (comma-separated)"),  # mode (first visit)
+            _canned("Specific ref numbers (comma-separated)"),  # mode (second visit)
+            _canned("CSV"),  # format
+            _canned("Exit"),  # main exit
+        ],
+    )
+    mocker.patch(
+        "qb_cli.repl.wizard.questionary.text",
+        side_effect=[
+            _canned("back"),  # ref text -> sentinel
+            _canned("14396"),  # ref text (second visit)
+            _canned("out.csv"),  # output path
+        ],
+    )
+    export_mock = mocker.patch(
+        "qb_cli.repl.wizard.export",
+        return_value=ExportResult(
+            entity="invoice",
+            count=1,
+            output_path=Path("out.csv"),
+            format=Format.CSV,
+        ),
+    )
+
+    rc = run_wizard(_fake_ctx())
+    assert rc == 0
+    assert export_mock.call_count == 1
+    # mode prompt should have been shown twice because back sent us back to it.
+    mode_calls = [
+        call
+        for call in select_mock.call_args_list
+        if call.args and call.args[0] == "How do you want to select records?"
+    ]
+    assert len(mode_calls) == 2
+
+
+def test_text_sentinel_main(mocker: MockerFixture) -> None:
+    """At the Ref numbers text prompt, typing 'm' returns to main menu (no export call)."""
+    mocker.patch(
+        "qb_cli.repl.wizard.questionary.select",
+        side_effect=[
+            _canned("Export records"),  # main
+            _canned("invoice"),  # entity
+            _canned("Specific ref numbers (comma-separated)"),  # mode
+            _canned("Exit"),  # main exit
+        ],
+    )
+    mocker.patch(
+        "qb_cli.repl.wizard.questionary.text",
+        return_value=_canned("m"),  # sentinel -> main menu
+    )
+    export_mock = mocker.patch("qb_cli.repl.wizard.export")
+
+    rc = run_wizard(_fake_ctx())
+    assert rc == 0
+    export_mock.assert_not_called()
+
+
 def test_op_exception_does_not_crash_wizard(mocker: MockerFixture) -> None:
     """If an op raises, wizard catches it, prints an error, loops back, user exits."""
     mocker.patch(
