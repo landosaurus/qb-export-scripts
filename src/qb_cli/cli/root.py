@@ -49,7 +49,7 @@ def qb(
             json_output=json_output,
         )
     if ctx.invoked_subcommand is None:
-        ctx.invoke(repl)
+        ctx.invoke(wizard)
 
 
 # Sub-commands registered below (imports kept at module scope-bottom to avoid cycles).
@@ -58,6 +58,7 @@ from qb_cli.cli.import_cmd import import_cmd  # noqa: E402
 from qb_cli.cli.query_cmd import query  # noqa: E402
 from qb_cli.cli.repl_cmd import repl  # noqa: E402
 from qb_cli.cli.verify_cmd import verify  # noqa: E402
+from qb_cli.cli.wizard_cmd import wizard  # noqa: E402
 
 
 qb.add_command(export)
@@ -65,3 +66,4 @@ qb.add_command(import_cmd)
 qb.add_command(query)
 qb.add_command(repl)
 qb.add_command(verify)
+qb.add_command(wizard)

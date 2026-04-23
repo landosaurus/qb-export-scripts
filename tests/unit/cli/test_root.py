@@ -13,14 +13,15 @@ def test_qb_help_lists_subcommands() -> None:
     assert result.exit_code == 0
     assert "export" in result.output
     assert "repl" in result.output
+    assert "wizard" in result.output
 
 
-def test_qb_no_subcommand_invokes_repl(mocker) -> None:
+def test_qb_no_subcommand_invokes_wizard(mocker) -> None:
     from qb_cli.cli.root import qb
 
-    # Patch run_repl so the test verifies wiring only — don't actually open a
-    # prompt_toolkit session (which fails on Windows CliRunner without a console).
-    mock_run = mocker.patch("qb_cli.cli.repl_cmd.run_repl", return_value=0)
+    # Patch run_wizard so the test verifies wiring only — don't actually open a
+    # questionary prompt (which fails on Windows CliRunner without a console).
+    mock_run = mocker.patch("qb_cli.cli.wizard_cmd.run_wizard", return_value=0)
 
     runner = CliRunner()
     result = runner.invoke(qb, [], obj=MagicMock())
