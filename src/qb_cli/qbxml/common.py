@@ -37,3 +37,20 @@ def parse_address(elem: Optional[etree._Element]) -> Optional[Address]:
     if not payload:
         return None
     return Address.model_validate(payload)
+
+
+def read_iterator_state(response_xml: str) -> tuple[Optional[str], int]:
+    """Extract iterator state from a QBXML response.
+
+    Returns ``(iterator_id, remaining_count)``:
+    - ``iterator_id`` is the ``iteratorID`` attribute on the first ``*QueryRs`` element,
+      or ``None`` if the response is not iterated.
+    - ``remaining_count`` is the ``iteratorRemainingCount`` attribute as int, or 0
+      if missing (meaning there are no more pages).
+    """
+    root = etree.fromstring(response_xml.encode("utf-8"))
+    for rs in root.xpath("//*[local-name()='QBXMLMsgsRs']/*"):
+        iid = rs.get("iteratorID")
+        remaining = int(rs.get("iteratorRemainingCount", "0"))
+        return iid, remaining
+    return None, 0
