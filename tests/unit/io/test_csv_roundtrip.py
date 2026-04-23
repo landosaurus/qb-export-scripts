@@ -6,6 +6,25 @@ from qb_cli.models.purchase_order import PurchaseOrder
 from qb_cli.io.csv_serializer import to_csv, from_csv
 
 
+def test_csv_handles_non_ascii_text(tmp_path: Path):
+    """Regression: Windows default encoding (cp1252) can't represent smart
+    quotes, em-dashes, etc., causing UnicodeEncodeError on writerow. The
+    serializer must force UTF-8 on both write and read."""
+    inv = Invoice(
+        ref_number="14396",
+        customer_ref={"FullName": "Café — Smith’s"},
+        memo="Note “quoted” text",
+        line_items=[{"item_ref": {"FullName": "40-RAG12"}, "quantity": "1", "amount": "1.00"}],
+    )
+    path = tmp_path / "unicode.csv"
+    to_csv([inv], path)
+    text = path.read_text(encoding="utf-8")
+    assert "Café" in text
+    loaded = from_csv(Invoice, path)
+    assert loaded[0].customer_ref.full_name == "Café — Smith’s"
+    assert loaded[0].memo == "Note “quoted” text"
+
+
 def test_invoice_round_trip(tmp_path: Path):
     inv = Invoice(
         ref_number="14396",

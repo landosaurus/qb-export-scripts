@@ -196,7 +196,7 @@ def to_csv(entities: Iterable[BaseEntity], path: str | Path) -> None:
     # Use the first entity's class for column discovery; fall back to writing
     # just the meta columns if the input is empty (we can't infer a schema).
     if not entity_list:
-        Path(path).write_text("row_type,parent_ref\n")
+        Path(path).write_text("row_type,parent_ref\n", encoding="utf-8")
         return
 
     model = type(entity_list[0])
@@ -211,7 +211,7 @@ def to_csv(entities: Iterable[BaseEntity], path: str | Path) -> None:
 
     fieldnames: list[str] = ["row_type", "parent_ref"] + header_cols + line_cols
 
-    with Path(path).open("w", newline="") as fh:
+    with Path(path).open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames, restval="")
         writer.writeheader()
         for entity in entity_list:
@@ -237,7 +237,7 @@ def from_csv(model: Type[T], path: str | Path) -> list[T]:
     header_rows: list[dict[str, str]] = []
     lines_by_parent: dict[str, list[dict[str, str]]] = {}
 
-    with Path(path).open("r", newline="") as fh:
+    with Path(path).open("r", newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh)
         for row in reader:
             row_type = row.get("row_type", "")

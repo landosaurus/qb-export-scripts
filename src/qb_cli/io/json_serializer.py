@@ -11,9 +11,9 @@ T = TypeVar("T", bound=BaseEntity)
 
 def to_json(entities: Iterable[BaseEntity], path: str | Path) -> None:
     records = [e.model_dump(by_alias=True, exclude_none=True, mode="json") for e in entities]
-    Path(path).write_text(json.dumps(records, indent=2))
+    Path(path).write_text(json.dumps(records, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def from_json(model: Type[T], path: str | Path) -> list[T]:
-    raw = json.loads(Path(path).read_text())
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
     return [model.model_validate(r) for r in raw]
