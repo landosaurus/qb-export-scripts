@@ -7,7 +7,7 @@ from typing import ClassVar, Optional
 from pydantic import Field
 
 from qb_cli.models.base import BaseEntity
-from qb_cli.models.shared import Address, Ref
+from qb_cli.models.shared import Address, Money, Ref
 
 
 class PurchaseOrderLineItem(BaseEntity):
@@ -21,7 +21,7 @@ class PurchaseOrderLineItem(BaseEntity):
     unit_of_measure: Optional[str] = Field(default=None, alias="UnitOfMeasure")
     rate: Optional[Decimal] = Field(default=None, alias="Rate")
     class_ref: Optional[Ref] = Field(default=None, alias="ClassRef")
-    amount: Optional[Decimal] = Field(default=None, alias="Amount")
+    amount: Money = Field(default=None, alias="Amount")
     inventory_site_ref: Optional[Ref] = Field(default=None, alias="InventorySiteRef")
     inventory_site_location_ref: Optional[Ref] = Field(
         default=None, alias="InventorySiteLocationRef"
@@ -70,9 +70,9 @@ class PurchaseOrder(BaseEntity):
     is_manually_closed: Optional[bool] = Field(default=None, alias="IsManuallyClosed")
 
     # Read-only (from query)
-    subtotal: Optional[Decimal] = Field(default=None, alias="Subtotal")
-    sales_tax_total: Optional[Decimal] = Field(default=None, alias="SalesTaxTotal")
-    total_amount: Optional[Decimal] = Field(default=None, alias="TotalAmount")
+    subtotal: Money = Field(default=None, alias="Subtotal")
+    sales_tax_total: Money = Field(default=None, alias="SalesTaxTotal")
+    total_amount: Money = Field(default=None, alias="TotalAmount")
     is_fully_received: Optional[bool] = Field(default=None, alias="IsFullyReceived")
 
     # Line items

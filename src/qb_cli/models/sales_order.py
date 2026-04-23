@@ -6,7 +6,7 @@ from typing import ClassVar, Optional
 from pydantic import Field
 
 from qb_cli.models.base import BaseEntity
-from qb_cli.models.shared import Address, Ref
+from qb_cli.models.shared import Address, Money, Ref
 
 
 class SalesOrderLineItem(BaseEntity):
@@ -19,7 +19,7 @@ class SalesOrderLineItem(BaseEntity):
     rate_percent: Optional[Decimal] = Field(default=None, alias="RatePercent")
     price_level_ref: Optional[Ref] = Field(default=None, alias="PriceLevelRef")
     class_ref: Optional[Ref] = Field(default=None, alias="ClassRef")
-    amount: Optional[Decimal] = Field(default=None, alias="Amount")
+    amount: Money = Field(default=None, alias="Amount")
     inventory_site_ref: Optional[Ref] = Field(default=None, alias="InventorySiteRef")
     inventory_site_location_ref: Optional[Ref] = Field(
         default=None, alias="InventorySiteLocationRef"
@@ -77,10 +77,10 @@ class SalesOrder(BaseEntity):
     exchange_rate: Optional[Decimal] = Field(default=None, alias="ExchangeRate")
 
     # Read-only (populated from query responses)
-    subtotal: Optional[Decimal] = Field(default=None, alias="Subtotal")
+    subtotal: Money = Field(default=None, alias="Subtotal")
     sales_tax_percentage: Optional[Decimal] = Field(default=None, alias="SalesTaxPercentage")
-    sales_tax_total: Optional[Decimal] = Field(default=None, alias="SalesTaxTotal")
-    total_amount: Optional[Decimal] = Field(default=None, alias="TotalAmount")
+    sales_tax_total: Money = Field(default=None, alias="SalesTaxTotal")
+    total_amount: Money = Field(default=None, alias="TotalAmount")
     is_fully_invoiced: Optional[bool] = Field(default=None, alias="IsFullyInvoiced")
 
     # Line items

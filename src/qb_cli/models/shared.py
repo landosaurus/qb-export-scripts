@@ -1,15 +1,33 @@
 from __future__ import annotations
 
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import Field
+from pydantic import BeforeValidator, Field
 
 from qb_cli.models.base import BaseEntity
 
 
 def quantize_money(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _coerce_money(v: object) -> Optional[Decimal]:
+    """Pydantic BeforeValidator that ensures every money value has exactly 2dp.
+
+    QuickBooks rejects Amount values with other precision (e.g. ``97.5`` fails
+    as ``Amount: There was an error when converting the amount "97.5"``). Since
+    Excel silently strips trailing zeros when a user edits an exported CSV,
+    we quantize on the way in so the model always carries canonical 2dp values.
+    """
+    if v is None or v == "":
+        return None
+    if isinstance(v, Decimal):
+        return quantize_money(v)
+    return quantize_money(Decimal(str(v)))
+
+
+Money = Annotated[Optional[Decimal], BeforeValidator(_coerce_money)]
 
 
 class Address(BaseEntity):
