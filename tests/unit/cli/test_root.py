@@ -15,10 +15,14 @@ def test_qb_help_lists_subcommands() -> None:
     assert "repl" in result.output
 
 
-def test_qb_no_subcommand_invokes_repl() -> None:
+def test_qb_no_subcommand_invokes_repl(mocker) -> None:
     from qb_cli.cli.root import qb
 
+    # Patch run_repl so the test verifies wiring only — don't actually open a
+    # prompt_toolkit session (which fails on Windows CliRunner without a console).
+    mock_run = mocker.patch("qb_cli.cli.repl_cmd.run_repl", return_value=0)
+
     runner = CliRunner()
-    # With no input piped, the REPL sees immediate EOF and exits cleanly.
-    result = runner.invoke(qb, [], obj=MagicMock(), input="")
+    result = runner.invoke(qb, [], obj=MagicMock())
     assert result.exit_code == 0
+    assert mock_run.call_count == 1
